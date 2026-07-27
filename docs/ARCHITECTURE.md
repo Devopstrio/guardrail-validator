@@ -10,15 +10,10 @@ The **Guardrail Validator** provides real-time security, PII redaction, and prom
 flowchart TD
     Client[Client App / API Gateway] -->|1. Transmit Payload| Middleware[Guardrail Interceptor Middleware]
     Middleware -->|2. Scan Injection Triggers| Scanner[Prompt Injection & Jailbreak Scanner]
-    
-    alt Prompt Injection Detected
-        Scanner -->|3a. Return Blocked Action| Middleware
-        Middleware -->|4a. Reject Request 403| Client
-    else Prompt Safe
-        Scanner -->|3b. Forward Safe Prompt| Sanitizer[PII Redaction Engine]
-        Sanitizer -->|4b. Redact Emails/SSNs/Keys| Middleware
-        Middleware -->|5. Forward Sanitized Prompt| LLM[LLM Backend Service]
-    end
+    Scanner --> IsSafe{Is Prompt Safe?}
+    IsSafe -- Prompt Injection Detected --> Reject[Reject Request 403]
+    IsSafe -- Prompt Safe --> Sanitizer[PII Redaction Engine]
+    Sanitizer -->|Redact Emails/SSNs/Keys| Forward[Forward Sanitized Payload to LLM]
 ```
 
 ## Core Safety Modules
